@@ -2,63 +2,70 @@ package config
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
+	"path/filepath"
 )
 
 const configFileName = ".gatorconfig.json"
 
 type Config struct {
-	DbURL           string `json:"db_url"`
+	DBURL           string `json:"db_url"`
 	CurrentUserName string `json:"current_user_name"`
 }
 
-func SetUser(cfg Config, currentUser string) error {
-	cfg.CurrentUserName = currentUser
-	ok := writeConfig(cfg)
-	if ok != nil {
-		return fmt.Errorf("Config SetUser: %v\n", ok)
-	}
-	return nil
+func (cfg *Config) SetUser(userName string) error {
+	cfg.CurrentUserName = userName
+	return write(*cfg)
 }
 
 func getConfigFilePath() (string, error) {
-	return "./" + configFileName, nil
+	wrkdir, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+	fullPath := filepath.Join(wrkdir, configFileName)
+	return fullPath, nil
 }
 
 func Read() (Config, error) {
-	// read json file
-	cfgFile, ok := getConfigFilePath()
-	if ok != nil {
-		return Config{}, fmt.Errorf("Read UserHomeDir: %v\n", ok)
-	}
-	dat, ok := os.ReadFile(cfgFile)
-	if ok != nil {
-		return Config{}, fmt.Errorf("Read dat: %v\n", ok)
+	fullPath, err := getConfigFilePath()
+	if err != nil {
+		return Config{}, err
 	}
 
-	jsonShit := Config{}
-	ok = json.Unmarshal(dat, &jsonShit)
-	if ok != nil {
-		return Config{}, fmt.Errorf("Read jsonShit: %v\n", ok)
+	file, err := os.Open(fullPath)
+	if err != nil {
+		return Config{}, err
 	}
-	return jsonShit, nil
+	defer file.Close()
+
+	decoder := json.NewDecoder(file)
+	cfg := Config{}
+	err = decoder.Decode(&cfg)
+	if err != nil {
+		return Config{}, err
+	}
+
+	return cfg, nil
 }
 
-func writeConfig(cfg Config) error {
-	// write to json
-	jsonShit, ok := json.Marshal(cfg)
-	if ok != nil {
-		return fmt.Errorf("Read writeConfig Marshal: %v\n", ok)
+func write(cfg Config) error {
+	fullPath, err := getConfigFilePath()
+	if err != nil {
+		return err
 	}
-	file, ok := getConfigFilePath()
-	// fmt.Println(file)
-	if ok != nil {
-		return fmt.Errorf("Read writeConfig file: %v\n", ok)
+
+	file, err := os.Create(fullPath)
+	if err != nil {
+		return err
 	}
-	ok = os.WriteFile(file, jsonShit, 0666)
-	if ok != nil {
-		return fmt.Errorf("Read writeConfig: %v\n", ok)
+	defer file.Close()
+
+	encoder := json.NewEncoder(file)
+	err = encoder.Encode(cfg)
+	if err != nil {
+		return err
 	}
+
 	return nil
 }
