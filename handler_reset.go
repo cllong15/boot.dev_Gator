@@ -6,13 +6,10 @@ import (
 )
 
 func handlerReset(s *state, cmd command) error {
-	if len(cmd.Args) > 1 {
-		return fmt.Errorf("too many args")
-	}
-
-	err := s.db.DeleteAll(context.Background())
+	err := s.db.DeleteUsers(context.Background())
 	if err != nil {
-		return fmt.Errorf("handlerDelete DeleteAll: %w", err)
+		return fmt.Errorf("couldn't delete users: %w", err)
 	}
+	fmt.Println("Database reset successfully!")
 	return nil
 }
