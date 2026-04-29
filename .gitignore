@@ -31,5 +31,4 @@ go.work.sum
 # .idea/
 # .vscode/
 gator
-go.mod
 .gatorconfig.json
