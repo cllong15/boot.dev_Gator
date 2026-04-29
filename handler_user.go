@@ -10,21 +10,6 @@ import (
 	"github.com/google/uuid"
 )
 
-func handlerUsers(s *state, cmd command) error {
-	users, ok := s.db.GetUsers(context.Background())
-	if ok != nil {
-		return fmt.Errorf("couldn't get users: %w", ok)
-	}
-	for _, user := range users {
-		if user.Name == s.cfg.CurrentUserName {
-			fmt.Printf("* %v (current)\n", user.Name)
-			continue
-		}
-		fmt.Printf("* %v\n", user.Name)
-	}
-	return nil
-}
-
 func handlerRegister(s *state, cmd command) error {
 	if len(cmd.Args) != 1 {
 		return fmt.Errorf("usage: %v <name>", cmd.Name)
@@ -69,6 +54,21 @@ func handlerLogin(s *state, cmd command) error {
 	}
 
 	fmt.Println("User switched successfully!")
+	return nil
+}
+
+func handlerListUsers(s *state, cmd command) error {
+	users, err := s.db.GetUsers(context.Background())
+	if err != nil {
+		return fmt.Errorf("couldn't list users: %w", err)
+	}
+	for _, user := range users {
+		if user.Name == s.cfg.CurrentUserName {
+			fmt.Printf("* %v (current)\n", user.Name)
+			continue
+		}
+		fmt.Printf("* %v\n", user.Name)
+	}
 	return nil
 }
 
