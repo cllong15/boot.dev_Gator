@@ -18,10 +18,8 @@ func handlerRegister(s *state, cmd command) error {
 	}
 	name := cmd.Args[0]
 
-	user_uuid := uuid.New()
-
 	params := database.CreateUserParams{
-		ID:        user_uuid.String(),
+		ID:        uuid.New(),
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 		Name:      name,
