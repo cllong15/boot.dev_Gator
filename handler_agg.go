@@ -3,20 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 )
 
 func handlerAgg(s *state, cmd command) error {
-	// fetchFeed and print to console
-	// if len(cmd.Args) != 1 {
-	// 	log.Fatalf("usage: %v <url>", cmd.Name)
-	// }
-	// url := cmd.Args[0]
-	url := "https://www.wagslane.dev/index.xml"
-	feed, ok := fetchFeed(context.Background(), url)
-	if ok != nil {
-		log.Fatalf("handlerAgg feed: %v", ok)
+	feed, err := fetchFeed(context.Background(), "https://www.wagslane.dev/index.xml")
+	if err != nil {
+		return fmt.Errorf("couldn't fetch feed: %w", err)
 	}
-	fmt.Println(feed)
+	fmt.Printf("Feed: %+v\n", feed)
 	return nil
 }

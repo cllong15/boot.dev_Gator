@@ -5,65 +5,60 @@ import (
 	"encoding/xml"
 	"html"
 	"io"
-	"log"
 	"net/http"
 	"time"
 )
 
 type RSSFeed struct {
-	Title         string    `xml:"title"`
-	Link          string    `xml:"link"`
-	Description   string    `xml:"description"`
-	Generator     string    `xml:"generator"`
-	Language      string    `xml:"language"`
-	LastBuildDate time.Time `xml:"lastBuildDate"`
-	Atom          string    `xml:"atom,attr"`
-	Channel       struct {
-		ItemAttr string `xml:"item,attr"`
-		Item     []struct {
-			Title       string `xml:"title"`
-			Link        string `xml:"link"`
-			Pubdate     string `xml:"pubdate"`
-			Guid        string `xml:"guid"`
-			Description string `xml:"description"`
-		} `xml:"item"`
+	Channel struct {
+		Title       string    `xml:"title"`
+		Link        string    `xml:"link"`
+		Description string    `xml:"description"`
+		Item        []RSSItem `xml:"item"`
 	} `xml:"channel"`
 }
 
+type RSSItem struct {
+	Title       string `xml:"title"`
+	Link        string `xml:"link"`
+	Description string `xml:"description"`
+	PubDate     string `xml:"pubDate"`
+}
+
 func fetchFeed(ctx context.Context, feedURL string) (*RSSFeed, error) {
-	req, ok := http.NewRequestWithContext(ctx, "GET", feedURL, nil)
-	if ok != nil {
-		log.Fatalf("fetchFeed req: %v", ok)
+	httpClient := http.Client{
+		Timeout: 10 * time.Second,
 	}
+	req, err := http.NewRequestWithContext(ctx, "GET", feedURL, nil)
+	if err != nil {
+		return nil, err
+	}
+
 	req.Header.Set("User-Agent", "gator")
-	client := &http.Client{}
-
-	res, ok := client.Do(req)
-	if ok != nil {
-		log.Fatalf("fetchFeed res: %v", ok)
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return nil, err
 	}
-	defer res.Body.Close()
+	defer resp.Body.Close()
 
-	data, ok := io.ReadAll(res.Body)
-	if ok != nil {
-		log.Fatalf("fetchFeed data: %v", ok)
+	dat, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
 	}
 
-	// fmt.Println(string(data))
-	feed := RSSFeed{}
-	ok = xml.Unmarshal(data, &feed)
-	if ok != nil {
-		log.Fatalf("fetchFeed, Unmarshal: %v", ok)
+	var rssFeed RSSFeed
+	err = xml.Unmarshal(dat, &rssFeed)
+	if err != nil {
+		return nil, err
 	}
 
-	// fmt.Println(feed)
-
-	feed.Title = html.UnescapeString(feed.Title)
-	feed.Description = html.UnescapeString(feed.Description)
-	for _, item := range feed.Channel.Item {
+	rssFeed.Channel.Title = html.UnescapeString(rssFeed.Channel.Title)
+	rssFeed.Channel.Description = html.UnescapeString(rssFeed.Channel.Description)
+	for i, item := range rssFeed.Channel.Item {
 		item.Title = html.UnescapeString(item.Title)
 		item.Description = html.UnescapeString(item.Description)
+		rssFeed.Channel.Item[i] = item
 	}
 
-	return &feed, nil
+	return &rssFeed, nil
 }
