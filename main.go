@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"log"
 	"os"
@@ -22,6 +23,10 @@ func main() {
 		log.Fatalf("error reading config: %v", err)
 	}
 
+	if cfg.Debug == true {
+		fetchFeed(context.Background(), "https://www.wagslane.dev/index.xml")
+	}
+
 	db, err := sql.Open("postgres", cfg.DBURL)
 	if err != nil {
 		log.Fatalf("error connecting to db: %v", err)
@@ -41,6 +46,7 @@ func main() {
 	cmds.register("register", handlerRegister)
 	cmds.register("reset", handlerReset)
 	cmds.register("users", handlerListUsers)
+	cmds.register("agg", handlerAgg)
 
 	if len(os.Args) < 2 {
 		log.Fatal("Usage: cli <command> [args...]")
