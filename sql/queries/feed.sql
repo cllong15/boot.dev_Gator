@@ -7,4 +7,5 @@ RETURNING *;
 SELECT * FROM feeds;
 
 -- name: GetFeedByURL :one
-SELECT * FROM feeds WHERE url = $1;
+SELECT * FROM feeds
+WHERE url = $1;
