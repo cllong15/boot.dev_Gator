@@ -49,18 +49,6 @@ func main() {
 	cmds.register("following", middlewareLoggedIn(handlerListFeedFollows))
 	cmds.register("unfollow", middlewareLoggedIn(handlerUnfollow))
 
-	if cfg.Debug {
-		ok := scrapeFeeds(programState)
-		if ok != nil {
-			log.Fatalf("main: scrapefeed: %v", ok)
-		}
-
-		os.Exit(0)
-	}
-	if len(os.Args) < 2 {
-		log.Fatal("Usage: cli <command> [args...]")
-	}
-
 	cmdName := os.Args[1]
 	cmdArgs := os.Args[2:]
 
