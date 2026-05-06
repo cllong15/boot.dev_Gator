@@ -59,3 +59,23 @@ func printFeedFollow(username, feedname string) {
 	fmt.Printf("* User:          %s\n", username)
 	fmt.Printf("* Feed:          %s\n", feedname)
 }
+
+func handlerUnfollow(s *state, cmd command, user database.User) error {
+	if len(cmd.Args) != 1 {
+		return fmt.Errorf("Usage: %v <url>", cmd.Name)
+	}
+	feed, ok := s.db.GetFeedByURL(context.Background(), cmd.Args[0])
+	if ok != nil {
+		return ok
+	}
+
+	ok = s.db.DeleteFeedFollows(context.Background(), database.DeleteFeedFollowsParams{
+		FeedID: feed.ID,
+		UserID: user.ID,
+	})
+	if ok != nil {
+		return ok
+	}
+	fmt.Printf("%s unfollowed %s\n", user.Name, feed.Name)
+	return nil
+}
