@@ -8,12 +8,21 @@ go run . register holgith
 echo "======"
 go run . addfeed "Lanes Blog" "https://www.wagslane.dev/index.xml"
 echo "======"
+go run . addfeed "Boot.dev Blog" "https://www.boot.dev/blog/index.xml"
+echo "======"
+go run . addfeed "TechCrunch" "https://techcrunch.com/feed/"
+echo "======"
+go run . addfeed "Hacker News" "https://news.ycombinator.com/rss"
+echo "======"
 go run . follow "https://hnrss.org/newest"
 echo "======"
 go run . following
 echo "======"
-# sleep 1
 go run . login kahya
 echo "======"
-# sleep 1
+go run . follow "https://news.ycombinator.com/rss"
+echo "======"
 go run . following
+
+# TechCrunch: https://techcrunch.com/feed/
+# Hacker News: https://news.ycombinator.com/rss
